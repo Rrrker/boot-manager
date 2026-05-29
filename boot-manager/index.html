@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boot-Manager</title>
+    <script src="/static/vendor/vue.global.prod.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      [v-cloak] {
+        display: none;
+      }
+
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.12), transparent 28rem),
+          radial-gradient(circle at 88% 10%, rgba(245, 158, 11, 0.1), transparent 24rem),
+          #f5f7f6;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:disabled,
+      input:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+      }
+
+      svg {
+        display: block;
+      }
+
+      #app {
+        margin: 0 auto;
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        max-width: 80rem;
+        flex-direction: column;
+        gap: 1.25rem;
+        padding: 1rem;
+      }
+
+      .focus-ring:focus-visible {
+        outline: 3px solid rgba(20, 184, 166, 0.35);
+        outline-offset: 2px;
+      }
+
+      .fixed { position: fixed; }
+      .inset-0 { inset: 0; }
+      .z-50 { z-index: 50; }
+      .z-\[60\] { z-index: 60; }
+      .mx-auto { margin-left: auto; margin-right: auto; }
+      .mb-3 { margin-bottom: 0.75rem; }
+      .mb-4 { margin-bottom: 1rem; }
+      .mb-5 { margin-bottom: 1.25rem; }
+      .mt-1 { margin-top: 0.25rem; }
+      .mt-2 { margin-top: 0.5rem; }
+      .mt-3 { margin-top: 0.75rem; }
+      .mt-4 { margin-top: 1rem; }
+      .mt-5 { margin-top: 1.25rem; }
+      .block { display: block; }
+      .flex { display: flex; }
+      .inline-flex { display: inline-flex; }
+      .grid { display: grid; }
+      .hidden { display: none; }
+      .min-h-screen { min-height: 100vh; }
+      .min-h-\[420px\] { min-height: 420px; }
+      .min-h-\[540px\] { min-height: 540px; }
+      .h-2\.5 { height: 0.625rem; }
+      .h-4 { height: 1rem; }
+      .h-5 { height: 1.25rem; }
+      .h-6 { height: 1.5rem; }
+      .h-7 { height: 1.75rem; }
+      .h-9 { height: 2.25rem; }
+      .h-10 { height: 2.5rem; }
+      .h-11 { height: 2.75rem; }
+      .h-12 { height: 3rem; }
+      .h-14 { height: 3.5rem; }
+      .w-2\.5 { width: 0.625rem; }
+      .w-4 { width: 1rem; }
+      .w-5 { width: 1.25rem; }
+      .w-6 { width: 1.5rem; }
+      .w-7 { width: 1.75rem; }
+      .w-9 { width: 2.25rem; }
+      .w-11 { width: 2.75rem; }
+      .w-12 { width: 3rem; }
+      .w-14 { width: 3.5rem; }
+      .w-full { width: 100%; }
+      .min-w-0 { min-width: 0; }
+      .min-w-7 { min-width: 1.75rem; }
+      .max-w-md { max-width: 28rem; }
+      .max-w-xl { max-width: 36rem; }
+      .flex-1 { flex: 1 1 0%; }
+      .shrink-0 { flex-shrink: 0; }
+      .flex-col { flex-direction: column; }
+      .flex-col-reverse { flex-direction: column-reverse; }
+      .flex-wrap { flex-wrap: wrap; }
+      .items-start { align-items: flex-start; }
+      .items-center { align-items: center; }
+      .justify-center { justify-content: center; }
+      .justify-between { justify-content: space-between; }
+      .justify-end { justify-content: flex-end; }
+      .place-items-center { place-items: center; }
+      .gap-2 { gap: 0.5rem; }
+      .gap-3 { gap: 0.75rem; }
+      .gap-4 { gap: 1rem; }
+      .gap-5 { gap: 1.25rem; }
+      .space-y-3 > * + * { margin-top: 0.75rem; }
+      .overflow-auto { overflow: auto; }
+      .overflow-hidden { overflow: hidden; }
+      .overflow-y-auto { overflow-y: auto; }
+      .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .break-all { word-break: break-all; }
+      .rounded-full { border-radius: 9999px; }
+      .rounded-md { border-radius: 0.375rem; }
+      .rounded-lg { border-radius: 0.5rem; }
+      .border { border: 1px solid #e7e5e4; }
+      .border-b { border-bottom: 1px solid #e7e5e4; }
+      .border-dashed { border-style: dashed; }
+      .border-stone-200,
+      .border-stone-200\/80 { border-color: #e7e5e4; }
+      .border-stone-300 { border-color: #d6d3d1; }
+      .border-stone-900 { border-color: #1c1917; }
+      .border-red-200 { border-color: #fecaca; }
+      .border-amber-200 { border-color: #fde68a; }
+      .border-amber-300 { border-color: #fcd34d; }
+      .border-teal-500 { border-color: #14b8a6; }
+      .border-white\/10 { border-color: rgba(255, 255, 255, 0.1); }
+      .bg-white,
+      .bg-white\/92 { background: rgba(255, 255, 255, 0.92); }
+      .bg-black { background: #000; }
+      .bg-stone-50 { background: #fafaf9; }
+      .bg-stone-100 { background: #f5f5f4; }
+      .bg-stone-950 { background: #0c0a09; }
+      .bg-stone-950\/45 { background: rgba(12, 10, 9, 0.45); }
+      .bg-teal-50 { background: #f0fdfa; }
+      .bg-teal-700 { background: #0f766e; }
+      .bg-emerald-500 { background: #10b981; }
+      .bg-amber-50 { background: #fffbeb; }
+      .bg-amber-100 { background: #fef3c7; }
+      .bg-amber-500 { background: #f59e0b; }
+      .bg-amber-800 { background: #92400e; }
+      .bg-red-50 { background: #fef2f2; }
+      .p-3 { padding: 0.75rem; }
+      .p-4 { padding: 1rem; }
+      .p-5 { padding: 1.25rem; }
+      .p-6 { padding: 1.5rem; }
+      .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+      .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+      .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+      .px-4 { padding-left: 1rem; padding-right: 1rem; }
+      .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+      .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+      .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+      .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+      .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      .py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+      .pb-4 { padding-bottom: 1rem; }
+      .text-center { text-align: center; }
+      .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+      .text-xs { font-size: 0.75rem; }
+      .text-sm { font-size: 0.875rem; }
+      .text-base { font-size: 1rem; }
+      .text-lg { font-size: 1.125rem; }
+      .text-2xl { font-size: 1.5rem; }
+      .text-3xl { font-size: 1.875rem; }
+      .font-medium { font-weight: 500; }
+      .font-semibold { font-weight: 600; }
+      .leading-5 { line-height: 1.25rem; }
+      .leading-6 { line-height: 1.5rem; }
+      .tracking-normal { letter-spacing: 0; }
+      .text-white { color: #fff; }
+      .text-stone-300 { color: #d6d3d1; }
+      .text-stone-400 { color: #a8a29e; }
+      .text-stone-500 { color: #78716c; }
+      .text-stone-600 { color: #57534e; }
+      .text-stone-700 { color: #44403c; }
+      .text-stone-900 { color: #1c1917; }
+      .text-stone-950 { color: #0c0a09; }
+      .text-teal-700 { color: #0f766e; }
+      .text-teal-800 { color: #115e59; }
+      .text-emerald-300 { color: #6ee7b7; }
+      .text-red-300 { color: #fca5a5; }
+      .text-red-700 { color: #b91c1c; }
+      .text-amber-300 { color: #fcd34d; }
+      .text-amber-900 { color: #78350f; }
+      .text-amber-950 { color: #451a03; }
+      .shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); }
+      .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.12); }
+      .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+      .ring-1 { box-shadow: 0 0 0 1px #fef3c7; }
+      .ring-2 { box-shadow: 0 0 0 2px #ccfbf1; }
+      .opacity-25 { opacity: 0.25; }
+      .opacity-60 { opacity: 0.6; }
+      .opacity-90 { opacity: 0.9; }
+      .outline-none { outline: none; }
+      .transition { transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, opacity 0.16s ease; }
+      .backdrop-blur { backdrop-filter: blur(10px); }
+      .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      .cursor-grab { cursor: grab; }
+
+      .hover\:bg-stone-50:hover { background: #fafaf9; }
+      .hover\:bg-stone-100:hover { background: #f5f5f4; }
+      .hover\:bg-stone-800:hover { background: #292524; }
+      .hover\:bg-teal-800:hover { background: #115e59; }
+      .hover\:bg-amber-900:hover { background: #78350f; }
+      .hover\:bg-red-50:hover { background: #fef2f2; }
+      .hover\:bg-white\/10:hover { background: rgba(255, 255, 255, 0.1); }
+      .hover\:border-stone-300:hover { border-color: #d6d3d1; }
+      .hover\:text-stone-700:hover { color: #44403c; }
+      .hover\:text-stone-900:hover { color: #1c1917; }
+      .hover\:text-white:hover { color: #fff; }
+      .active\:cursor-grabbing:active { cursor: grabbing; }
+
+      input {
+        border: 1px solid #d6d3d1;
+        background: #fff;
+        color: #0c0a09;
+      }
+
+      input:focus {
+        border-color: #0f766e;
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @media (min-width: 640px) {
+        #app { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .sm\:px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .sm\:flex-row { flex-direction: row; }
+        .sm\:items-center { align-items: center; }
+        .sm\:justify-between { justify-content: space-between; }
+        .sm\:justify-end { justify-content: flex-end; }
+        .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .sm\:text-3xl { font-size: 1.875rem; }
+      }
+
+      @media (min-width: 1024px) {
+        #app { padding-left: 2rem; padding-right: 2rem; }
+        .lg\:flex-row { flex-direction: row; }
+        .lg\:items-start { align-items: flex-start; }
+        .lg\:items-center { align-items: center; }
+        .lg\:justify-between { justify-content: space-between; }
+        .lg\:justify-end { justify-content: flex-end; }
+      }
+
+      @media (min-width: 1280px) {
+        .xl\:grid-cols-\[minmax\(0\,1fr\)_380px\] {
+          grid-template-columns: minmax(0, 1fr) 380px;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-stone-950 antialiased">
+    <div id="app" v-cloak class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-8">
+      <div v-if="!authenticated" class="fixed inset-0 z-[60] grid place-items-center bg-stone-100 px-4">
+        <form class="w-full max-w-md rounded-lg border border-stone-200 bg-white p-6 shadow-xl" @submit.prevent="login">
+          <div class="mb-5">
+            <div class="mb-3 grid h-12 w-12 place-items-center rounded-lg bg-teal-700 text-white" aria-hidden="true">
+              <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6V10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-semibold text-stone-950">管理员密钥</h1>
+            <p class="mt-2 text-sm leading-6 text-stone-500">请输入 docker-compose 环境变量 ADMIN_KEY 中配置的密钥。</p>
+          </div>
+          <label class="block text-sm font-medium text-stone-700">
+            密钥
+            <input
+              v-model="loginKey"
+              type="password"
+              autocomplete="current-password"
+              required
+              autofocus
+              class="focus-ring mt-1 h-11 w-full rounded-md border border-stone-300 px-3 text-sm outline-none transition focus:border-teal-700"
+            />
+          </label>
+          <p v-if="loginError" class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ loginError }}</p>
+          <button class="focus-ring mt-5 inline-flex h-11 w-full items-center justify-center rounded-md bg-stone-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400" type="submit" :disabled="loginLoading">
+            {{ loginLoading ? '验证中...' : '进入管理台' }}
+          </button>
+        </form>
+      </div>
+
+      <header class="rounded-lg border border-stone-200/80 bg-white/92 px-4 py-4 shadow-sm backdrop-blur sm:px-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-teal-700 text-white shadow-sm" aria-hidden="true">
+              <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                <path d="M4 8.5h16M4 15.5h16M7 5v7M17 12v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h1 class="text-2xl font-semibold tracking-normal text-stone-950 sm:text-3xl">Boot-Manager</h1>
+              <p class="mt-1 text-sm leading-6 text-stone-600">一个让 Docker 优雅启动的管理器。</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
+            <div class="inline-flex h-10 items-center gap-2 rounded-md border border-stone-200 bg-stone-50 px-3 text-sm text-stone-700">
+              <span class="h-2.5 w-2.5 rounded-full" :class="apiOnline ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+              {{ apiOnline ? '服务已连接' : '等待服务连接' }}
+            </div>
+            <button class="focus-ring h-10 rounded-md border border-stone-300 bg-white px-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50" @click="logout">退出</button>
+            <button
+              class="focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-md bg-stone-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
+              :disabled="booting"
+              @click="bootAll"
+            >
+              <svg v-if="booting" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3"></circle>
+                <path class="opacity-90" d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+              </svg>
+              <svg v-else class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 5v14l11-7L8 5Z" fill="currentColor"></path>
+              </svg>
+              {{ booting ? '启动中' : '一键优雅启动' }}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <section class="min-w-0 rounded-lg border border-stone-200/80 bg-white px-4 py-4 shadow-sm sm:px-5">
+          <div class="flex flex-col gap-3 border-b border-stone-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold text-stone-950">项目列表</h2>
+                <span class="rounded-md bg-teal-50 px-2 py-1 text-xs font-medium text-teal-800">{{ projects.length }} 个项目</span>
+                <span v-if="reorderSaving" class="rounded-md bg-stone-100 px-2 py-1 text-xs font-medium text-stone-600">保存排序中</span>
+              </div>
+              <p class="mt-1 text-sm text-stone-500">按启动顺序管理 Compose 项目、等待时间和重启风险。</p>
+            </div>
+            <button
+              class="focus-ring inline-flex h-10 items-center justify-center gap-2 rounded-md bg-teal-700 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
+              @click="startCreate"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              新增项目
+            </button>
+          </div>
+
+          <div v-if="projects.length === 0" class="grid min-h-[420px] place-items-center py-10">
+            <div class="mx-auto max-w-md text-center">
+              <div class="mx-auto grid h-14 w-14 place-items-center rounded-lg border border-dashed border-stone-300 bg-stone-50 text-stone-500" aria-hidden="true">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 7.5h16M7 4v7M17 13v7M4 16.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+              </div>
+              <h3 class="mt-4 text-base font-semibold text-stone-900">暂无项目</h3>
+              <p class="mt-2 text-sm leading-6 text-stone-500">手动新增一个 Compose 项目，或等待启动扫描和 Docker 事件自动发现。</p>
+            </div>
+          </div>
+
+          <div v-else class="mt-4 space-y-3">
+            <article
+              v-for="project in sortedProjects"
+              :key="project.id"
+              class="rounded-lg border bg-white p-4 shadow-sm transition hover:border-stone-300"
+              :class="projectCardClasses(project)"
+              :data-project-id="project.id"
+              @dragover.prevent="handleProjectDragOver($event, project)"
+              @dragenter.prevent="handleProjectDragOver($event, project)"
+              @dragleave="handleProjectDragLeave($event, project)"
+              @drop.prevent="dropProject($event, project)"
+            >
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      draggable="true"
+                      class="focus-ring grid h-7 w-7 shrink-0 cursor-grab place-items-center rounded-md border border-stone-200 bg-white text-stone-400 transition hover:border-stone-300 hover:text-stone-700 active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+                      :disabled="booting || reorderSaving"
+                      :aria-label="`拖动调整 ${project.name} 的启动顺序`"
+                      :title="booting ? '启动中暂不可调整顺序' : '拖动调整启动顺序'"
+                      @dragstart="startProjectDrag($event, project)"
+                      @dragend="finishProjectDrag"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                      </svg>
+                    </button>
+                    <span class="grid h-7 min-w-7 place-items-center rounded-md bg-stone-950 px-2 text-xs font-semibold text-white">{{ project.sort_order }}</span>
+                    <h3 class="min-w-0 truncate text-lg font-semibold text-stone-950">{{ project.name }}</h3>
+                    <span v-if="project.needs_warning" class="rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">需要检查 restart</span>
+                  </div>
+                  <p class="mt-3 break-all rounded-md bg-stone-50 px-3 py-2 font-mono text-xs leading-5 text-stone-600">{{ project.compose_path }}</p>
+                  <div class="mt-3 flex flex-wrap gap-2 text-xs text-stone-600">
+                    <span class="rounded-md border border-stone-200 bg-white px-2 py-1">等待 {{ project.delay_seconds }} 秒</span>
+                    <span class="rounded-md border border-stone-200 bg-white px-2 py-1">上次耗时 {{ Number(project.last_boot_time || 0).toFixed(2) }} 秒</span>
+                  </div>
+                </div>
+
+                <div class="flex shrink-0 flex-wrap gap-2">
+                  <button class="focus-ring inline-flex h-9 items-center justify-center rounded-md border border-stone-300 px-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50" @click="editProject(project)">编辑</button>
+                  <button class="focus-ring inline-flex h-9 items-center justify-center rounded-md border border-red-200 px-3 text-sm font-medium text-red-700 transition hover:bg-red-50" @click="deleteProject(project)">删除</button>
+                </div>
+              </div>
+
+              <div v-if="project.needs_warning" class="mt-4 flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+                <p class="leading-6">检测到新项目，请确认原 YAML 已设置 <code class="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs">restart: no</code>。</p>
+                <button class="focus-ring inline-flex h-9 items-center justify-center rounded-md bg-amber-800 px-3 text-sm font-semibold text-white transition hover:bg-amber-900" @click="clearWarning(project)">清除警告</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <aside class="flex flex-col rounded-lg border border-stone-900 bg-stone-950 p-4 shadow-sm">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-white">实时日志终端</h2>
+              <p class="mt-1 text-xs text-stone-400">启动事件和服务连接状态</p>
+            </div>
+            <button class="focus-ring h-9 rounded-md border border-white/10 px-3 text-xs font-medium text-stone-300 transition hover:bg-white/10 hover:text-white" @click="logs = []">清空</button>
+          </div>
+          <div ref="terminal" class="min-h-[540px] flex-1 overflow-auto rounded-lg border border-white/10 bg-black p-3 font-mono text-xs leading-5 text-emerald-300">
+            <p v-if="logs.length === 0" class="text-stone-500">等待事件...</p>
+            <p v-for="(log, index) in logs" :key="index">
+              <span class="text-stone-500">[{{ log.time }}]</span>
+              <span :class="log.level === 'error' ? 'text-red-300' : log.level === 'warn' ? 'text-amber-300' : 'text-emerald-300'">{{ log.message }}</span>
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <div v-if="formOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-stone-950/45 px-4 py-6" @click.self="closeForm">
+        <form class="w-full max-w-xl rounded-lg border border-stone-200 bg-white p-5 shadow-2xl" @submit.prevent="saveProject">
+          <div class="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-stone-950">{{ form.id ? '编辑项目' : '新增项目' }}</h2>
+              <p class="mt-1 text-sm text-stone-500">输入 Compose 目录时会自动补齐 docker-compose.yml。</p>
+            </div>
+            <button type="button" class="focus-ring grid h-9 w-9 place-items-center rounded-md text-stone-500 transition hover:bg-stone-100 hover:text-stone-900" @click="closeForm" aria-label="关闭表单">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+
+          <label class="mb-4 block text-sm font-medium text-stone-700">
+            项目名称
+            <input v-model.trim="form.name" required class="focus-ring mt-1 h-11 w-full rounded-md border border-stone-300 px-3 text-sm outline-none transition focus:border-teal-700" placeholder="moviepilot" />
+          </label>
+
+          <label class="mb-4 block text-sm font-medium text-stone-700">
+            Compose YAML 绝对路径
+            <input
+              v-model.trim="form.compose_path"
+              required
+              class="focus-ring mt-1 h-11 w-full rounded-md border border-stone-300 px-3 font-mono text-sm outline-none transition focus:border-teal-700"
+              placeholder="/docker/moviepilot"
+              @input="syncComposePathPreview"
+              @blur="normalizeComposePathInput"
+            />
+            <span class="mt-1 block text-xs leading-5 text-stone-500">
+              {{ composePathHint }}
+            </span>
+          </label>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block text-sm font-medium text-stone-700">
+              等待秒数
+              <input v-model.number="form.delay_seconds" min="0" type="number" class="focus-ring mt-1 h-11 w-full rounded-md border border-stone-300 px-3 text-sm outline-none transition focus:border-teal-700" />
+            </label>
+            <label class="block text-sm font-medium text-stone-700">
+              启动顺序（备用）
+              <input v-model.number="form.sort_order" min="0" type="number" class="focus-ring mt-1 h-11 w-full rounded-md border border-stone-300 px-3 text-sm outline-none transition focus:border-teal-700" />
+            </label>
+          </div>
+
+          <label class="mt-4 flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-700">
+            <input v-model="form.needs_warning" type="checkbox" class="h-4 w-4 rounded border-stone-300 text-teal-700 focus:ring-teal-700" />
+            显示 restart 警告
+          </label>
+
+          <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button class="focus-ring inline-flex h-10 items-center justify-center rounded-md border border-stone-300 px-4 text-sm font-semibold text-stone-700 transition hover:bg-stone-50" type="button" @click="closeForm">取消</button>
+            <button class="focus-ring inline-flex h-10 items-center justify-center rounded-md bg-teal-700 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800" type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            projects: [],
+            booting: false,
+            logs: [],
+            apiOnline: true,
+            authenticated: false,
+            authKey: '',
+            loginKey: '',
+            loginError: '',
+            loginLoading: false,
+            eventSource: null,
+            eventAbortController: null,
+            formOpen: false,
+            form: this.emptyForm(),
+            savedScrollLock: null,
+            draggingProjectId: null,
+            dragOverProjectId: null,
+            reorderSaving: false,
+          };
+        },
+        computed: {
+          sortedProjects() {
+            return [...this.projects].sort((a, b) => {
+              const orderDiff = Number(a.sort_order || 0) - Number(b.sort_order || 0);
+              return orderDiff || Number(a.id || 0) - Number(b.id || 0);
+            });
+          },
+          composePathHint() {
+            const normalized = this.normalizeComposePath(this.form.compose_path);
+            if (!normalized) return '示例：输入 /docker/moviepilot，会保存为 /docker/moviepilot/docker-compose.yml。';
+            if (normalized === this.form.compose_path) return '已识别为 Compose YAML 文件路径。';
+            return `将保存为 ${normalized}`;
+          },
+        },
+        mounted() {
+          const savedKey = localStorage.getItem('boot_manager_admin_key');
+          if (savedKey) {
+            this.loginKey = savedKey;
+            this.login();
+          }
+        },
+        beforeUnmount() {
+          this.disconnectEvents();
+          this.unlockPageScroll();
+        },
+        methods: {
+          emptyForm() {
+            return { id: null, name: '', compose_path: '', delay_seconds: 3, sort_order: 0, needs_warning: false };
+          },
+          stamp() {
+            return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+          },
+          log(message, level = 'info') {
+            this.logs.push({ time: this.stamp(), message, level });
+            this.$nextTick(() => {
+              const terminal = this.$refs.terminal;
+              if (terminal) terminal.scrollTop = terminal.scrollHeight;
+            });
+          },
+          async request(url, options = {}) {
+            const headers = { ...(options.headers || {}) };
+            if (!(options.body instanceof FormData)) headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+            if (this.authKey) headers.Authorization = `Bearer ${this.authKey}`;
+            const response = await fetch(url, {
+              headers,
+              ...options,
+            });
+            if (!response.ok) {
+              let detail = response.statusText;
+              try {
+                detail = (await response.json()).detail || detail;
+              } catch (_) {}
+              throw new Error(detail);
+            }
+            if (response.status === 204) return null;
+            return response.json();
+          },
+          async login() {
+            const key = String(this.loginKey || '').trim();
+            if (!key) return;
+            this.loginLoading = true;
+            this.loginError = '';
+            this.authKey = key;
+            try {
+              await this.request('/api/auth/check');
+              localStorage.setItem('boot_manager_admin_key', key);
+              this.authenticated = true;
+              this.fetchProjects();
+              this.connectEvents();
+            } catch (error) {
+              this.authKey = '';
+              this.authenticated = false;
+              localStorage.removeItem('boot_manager_admin_key');
+              this.loginError = '密钥错误或服务未就绪';
+            } finally {
+              this.loginLoading = false;
+            }
+          },
+          logout() {
+            this.disconnectEvents();
+            localStorage.removeItem('boot_manager_admin_key');
+            this.authKey = '';
+            this.loginKey = '';
+            this.authenticated = false;
+            this.projects = [];
+            this.logs = [];
+            this.booting = false;
+          },
+          disconnectEvents() {
+            if (this.eventAbortController) {
+              this.eventAbortController.abort();
+              this.eventAbortController = null;
+            }
+            if (this.eventSource) {
+              this.eventSource.close();
+              this.eventSource = null;
+            }
+          },
+          async fetchProjects() {
+            try {
+              this.projects = await this.request('/api/projects');
+              this.apiOnline = true;
+            } catch (error) {
+              this.apiOnline = false;
+              this.log(`项目接口不可用：${error.message}`, 'warn');
+            }
+          },
+          async connectEvents() {
+            let controller = null;
+            try {
+              this.disconnectEvents();
+              controller = new AbortController();
+              this.eventAbortController = controller;
+              const response = await fetch('/api/events', {
+                headers: { Authorization: `Bearer ${this.authKey}` },
+                signal: controller.signal,
+              });
+              if (!response.ok) throw new Error(response.statusText || 'SSE 连接失败');
+              if (!response.body) throw new Error('浏览器不支持事件流读取');
+              this.apiOnline = true;
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder();
+              let buffer = '';
+              const handler = (event) => {
+                if (!event) return;
+                const dataLine = event.split('\n').find((line) => line.startsWith('data: '));
+                if (!dataLine) return;
+                const data = dataLine.slice(6);
+                let payload;
+                try {
+                  payload = JSON.parse(data);
+                } catch (_) {
+                  return;
+                }
+                this.apiOnline = true;
+                this.log(payload.message);
+                if (['done', 'boot_end', 'discovered'].includes(payload.event)) this.fetchProjects();
+                if (payload.event === 'boot_end') this.booting = false;
+              };
+              while (this.eventAbortController === controller) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const events = buffer.split('\n\n');
+                buffer = events.pop() || '';
+                events.forEach(handler);
+              }
+            } catch (error) {
+              if (error.name === 'AbortError') return;
+              this.apiOnline = false;
+              this.log(`无法建立事件连接：${error.message}`, 'error');
+            } finally {
+              if (this.eventAbortController === controller) {
+                this.eventAbortController = null;
+              }
+            }
+          },
+          normalizeComposePath(value) {
+            const path = String(value || '').trim();
+            if (!path) return '';
+            if (/\.(ya?ml)$/i.test(path)) return path;
+            const trimmed = path.replace(/[\\\/]+$/, '');
+            const separator = trimmed.includes('\\') && !trimmed.includes('/') ? '\\' : '/';
+            return `${trimmed}${separator}docker-compose.yml`;
+          },
+          normalizeComposePathInput() {
+            this.form.compose_path = this.normalizeComposePath(this.form.compose_path);
+          },
+          syncComposePathPreview() {
+            this.form.compose_path = String(this.form.compose_path || '').trim();
+          },
+          projectCardClasses(project) {
+            const classes = project.needs_warning ? ['border-amber-300', 'ring-1', 'ring-amber-100'] : ['border-stone-200'];
+            if (this.draggingProjectId === project.id) classes.push('opacity-60');
+            if (this.dragOverProjectId === project.id && this.draggingProjectId !== project.id) {
+              classes.push('border-teal-500', 'ring-2', 'ring-teal-100');
+            }
+            return classes;
+          },
+          startProjectDrag(event, project) {
+            if (this.booting || this.reorderSaving) {
+              event.preventDefault();
+              return;
+            }
+            this.draggingProjectId = project.id;
+            this.dragOverProjectId = null;
+            if (event.dataTransfer) {
+              event.dataTransfer.effectAllowed = 'move';
+              event.dataTransfer.setData('text/plain', String(project.id));
+            }
+          },
+          handleProjectDragOver(event, project) {
+            if (!this.draggingProjectId || this.draggingProjectId === project.id) return;
+            this.dragOverProjectId = project.id;
+            if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+          },
+          handleProjectDragLeave(event, project) {
+            if (event.currentTarget.contains(event.relatedTarget)) return;
+            if (this.dragOverProjectId === project.id) this.dragOverProjectId = null;
+          },
+          finishProjectDrag() {
+            this.draggingProjectId = null;
+            this.dragOverProjectId = null;
+          },
+          async dropProject(event, targetProject) {
+            const draggedId = Number(event.dataTransfer?.getData('text/plain') || this.draggingProjectId);
+            this.finishProjectDrag();
+            if (!draggedId || draggedId === targetProject.id || this.reorderSaving) return;
+
+            const ordered = this.sortedProjects.map((project) => ({ ...project }));
+            const draggedIndex = ordered.findIndex((project) => project.id === draggedId);
+            const targetIndex = ordered.findIndex((project) => project.id === targetProject.id);
+            if (draggedIndex < 0 || targetIndex < 0) return;
+
+            const [draggedProject] = ordered.splice(draggedIndex, 1);
+            let insertIndex = ordered.findIndex((project) => project.id === targetProject.id);
+            const rect = event.currentTarget.getBoundingClientRect();
+            if (event.clientY > rect.top + rect.height / 2) insertIndex += 1;
+            ordered.splice(insertIndex, 0, draggedProject);
+
+            await this.saveProjectOrder(ordered);
+          },
+          async saveProjectOrder(orderedProjects) {
+            const previousProjects = this.projects.map((project) => ({ ...project }));
+            const normalizedProjects = orderedProjects.map((project, index) => ({ ...project, sort_order: index + 1 }));
+            this.projects = normalizedProjects;
+            this.reorderSaving = true;
+            try {
+              const savedProjects = await this.request('/api/projects/reorder', {
+                method: 'POST',
+                body: JSON.stringify({ project_ids: normalizedProjects.map((project) => project.id) }),
+              });
+              this.projects = savedProjects;
+              this.apiOnline = true;
+              this.log('启动顺序已更新');
+            } catch (error) {
+              this.projects = previousProjects;
+              this.apiOnline = false;
+              this.log(`排序保存失败：${error.message}`, 'error');
+              await this.fetchProjects();
+            } finally {
+              this.reorderSaving = false;
+            }
+          },
+          lockPageScroll() {
+            if (this.savedScrollLock) return;
+            this.savedScrollLock = {
+              htmlOverflow: document.documentElement.style.overflow,
+              bodyOverflow: document.body.style.overflow,
+              bodyPaddingRight: document.body.style.paddingRight,
+            };
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
+          },
+          unlockPageScroll() {
+            if (!this.savedScrollLock) return;
+            document.documentElement.style.overflow = this.savedScrollLock.htmlOverflow;
+            document.body.style.overflow = this.savedScrollLock.bodyOverflow;
+            document.body.style.paddingRight = this.savedScrollLock.bodyPaddingRight;
+            this.savedScrollLock = null;
+          },
+          startCreate() {
+            this.form = this.emptyForm();
+            this.form.sort_order = this.projects.length + 1;
+            this.formOpen = true;
+            this.lockPageScroll();
+          },
+          editProject(project) {
+            this.form = { ...project };
+            this.formOpen = true;
+            this.lockPageScroll();
+          },
+          closeForm() {
+            this.formOpen = false;
+            this.form = this.emptyForm();
+            this.unlockPageScroll();
+          },
+          async saveProject() {
+            this.normalizeComposePathInput();
+            const payload = { ...this.form };
+            const id = payload.id;
+            delete payload.id;
+            try {
+              await this.request(id ? `/api/projects/${id}` : '/api/projects', {
+                method: id ? 'PUT' : 'POST',
+                body: JSON.stringify(payload),
+              });
+              this.closeForm();
+              await this.fetchProjects();
+            } catch (error) {
+              this.apiOnline = false;
+              this.log(`保存失败：${error.message}`, 'error');
+            }
+          },
+          async deleteProject(project) {
+            if (!confirm(`删除项目 ${project.name}？`)) return;
+            await this.request(`/api/projects/${project.id}`, { method: 'DELETE' });
+            await this.fetchProjects();
+          },
+          async clearWarning(project) {
+            await this.request(`/api/projects/${project.id}/clear-warning`, { method: 'POST' });
+            await this.fetchProjects();
+          },
+          async bootAll() {
+            this.booting = true;
+            try {
+              await this.request('/api/boot', { method: 'POST' });
+              this.apiOnline = true;
+            } catch (error) {
+              this.apiOnline = false;
+              this.log(`启动失败：${error.message}`, 'error');
+              this.booting = false;
+            }
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>

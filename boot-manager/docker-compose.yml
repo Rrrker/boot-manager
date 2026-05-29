@@ -1,0 +1,14 @@
+services:
+  boot-manager:
+    build: .
+    container_name: boot-manager
+    ports:
+      - "8080:8000"
+    environment:
+      - ADMIN_KEY=${ADMIN_KEY:?ADMIN_KEY is required}
+      - BOOT_ON_START_DELAY_SECONDS=${BOOT_ON_START_DELAY_SECONDS:-30}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /docker:/docker
+      - ./data:/app/data
+    restart: always
