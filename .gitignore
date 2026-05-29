@@ -16,3 +16,6 @@ boot-manager/data/
 
 .agents/
 .codex/
+
+# 本地部署文件
+部署使用的docker-compose.yml
